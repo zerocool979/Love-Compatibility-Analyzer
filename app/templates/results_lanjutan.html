@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Analisis: {{ profile1.name }} & {{ profile2.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; }
+        .dossier-container { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .tab-button { @apply px-6 py-3 font-semibold text-gray-500 border-b-4 border-transparent transition-all duration-300; }
+        .tab-button.active { @apply text-purple-600 border-purple-600; }
+        .tab-content { display: none; animation: fadeIn 0.5s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .action-btn { @apply w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center text-sm text-center; }
+        .action-btn:disabled { @apply opacity-50 cursor-not-allowed; }
+    </style>
+</head>
+<body class="text-slate-800">
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- Header Utama -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Digital Dossier: Potensi Hubungan</h1>
+            <h2 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 mt-1">
+                {{ profile1.name }} & {{ profile2.name }}
+            </h2>
+        </div>
+
+        <!-- Kontainer Dossier -->
+        <div class="w-full max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden dossier-container">
+            <!-- Navigasi Tab -->
+            <div class="border-b border-gray-200 bg-white/50 backdrop-blur-sm">
+                <nav class="-mb-px flex justify-center" aria-label="Tabs">
+                    <button class="tab-button active" data-tab="analisis">
+                        <i class="fas fa-chart-pie mr-2"></i> Skor & Analisis
+                    </button>
+                    <button class="tab-button" data-tab="ai-story">
+                        <i class="fas fa-feather-alt mr-2"></i> Kisah dari AI
+                    </button>
+                    <button class="tab-button" data-tab="aksi">
+                        <i class="fas fa-cogs mr-2"></i> Opsi Lanjutan
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Konten Tab -->
+            <div class="p-6 md:p-8">
+                <!-- Tab 1: Skor & Analisis -->
+                <div id="tab-analisis" class="tab-content active">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Skor & Rincian -->
+                        <div class="space-y-6">
+                            <h3 class="text-xl font-semibold text-slate-800">Hasil Prediksi Kuantitatif</h3>
+                            <div class="bg-white/60 p-6 rounded-xl shadow-md text-center">
+                                <p class="text-lg font-semibold text-slate-600">Skor Kecocokan Final</p>
+                                <p class="text-7xl font-bold text-purple-600 my-2">{{ score }}<span class="text-4xl">%</span></p>
+                            </div>
+                            <div class="bg-white/60 p-6 rounded-xl shadow-md">
+                                <p class="font-semibold text-slate-700 mb-4">Rincian Analisis</p>
+                                <div class="space-y-4">
+                                    {% for key, value in breakdown.items() %}
+                                    <div>
+                                        <div class="flex justify-between mb-1 text-sm font-medium">
+                                            <span class="text-slate-600">{{ key }}</span><span class="text-slate-800">{{ value }}%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-gradient-to-r from-cyan-400 to-blue-500 h-2.5 rounded-full" style="width: {{ value }}%"></div></div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Radar Chart -->
+                        <div class="bg-white/60 p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-semibold text-slate-800 text-center mb-4">Perbandingan Prioritas</h3>
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Kisah dari AI -->
+                <div id="tab-ai-story" class="tab-content">
+                    <div class="space-y-8">
+                        <div class="bg-white/60 p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-semibold text-slate-800 mb-3 flex items-center"><i class="fas fa-book-open text-purple-500 mr-3"></i> Kisah Pertemuan</h3>
+                            <p id="love-story-container" class="text-slate-600 leading-relaxed italic transition-opacity duration-500">"{{ love_story }}"</p>
+                        </div>
+                        <div class="bg-white/60 p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-semibold text-slate-800 mb-3 flex items-center"><i class="fas fa-comments text-sky-500 mr-3"></i> Analisis Bahasa Cinta</h3>
+                            <div id="love-language-container" class="text-slate-600 whitespace-pre-line">{{ love_language_analysis | default('Analisis tidak tersedia.') }}</div>
+                        </div>
+                        <div class="bg-white/60 p-6 rounded-xl shadow-md">
+                            <h3 class="text-xl font-semibold text-slate-800 mb-3 flex items-center"><i class="fas fa-lightbulb text-amber-500 mr-3"></i> Ide Kencan Sempurna</h3>
+                            <p id="date-idea-container" class="text-slate-600 leading-relaxed font-medium transition-opacity duration-500">"{{ date_idea }}"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Opsi Lanjutan -->
+                <div id="tab-aksi" class="tab-content">
+                    <div class="max-w-md mx-auto text-center">
+                        <h3 class="text-2xl font-semibold text-slate-800">Jadikan Lebih Personal</h3>
+                        <p class="text-slate-600 mt-2 mb-6">Coba lagi, kembali ke dasbor, atau bagikan hasil terbaik Anda.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="regenerate('story')" id="btn-regen-story" class="action-btn bg-purple-100 text-purple-700 hover:bg-purple-200"><i class="fas fa-magic mr-2"></i> Regenerasi Cerita</button>
+                            <button onclick="regenerate('date_idea')" id="btn-regen-idea" class="action-btn bg-teal-100 text-teal-700 hover:bg-teal-200"><i class="fas fa-lightbulb mr-2"></i> Ide Kencan Lain</button>
+                            <button onclick="shareResult()" id="btn-share" class="action-btn bg-pink-500 text-white hover:bg-pink-600 col-span-2"><i class="fas fa-share-alt mr-2"></i> Bagikan Hasil</button>
+                            <a href="{{ url_for('main.form') }}" class="action-btn bg-slate-100 text-slate-700 hover:bg-slate-200"><i class="fas fa-redo mr-2"></i> Analisis Lagi</a>
+                            <a href="{{ url_for('main.dashboard') }}" class="action-btn bg-slate-700 text-white hover:bg-slate-800"><i class="fas fa-th-large mr-2"></i> Lihat Dasbor</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = document.getElementById(`tab-${tab.dataset.tab}`);
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                tabContents.forEach(c => c.classList.remove('active'));
+                target.classList.add('active');
+            });
+        });
+        // --- Skrip untuk Chart.js (Tidak Berubah) ---
+        const priorityData = JSON.parse('{{ priority_analysis | safe }}');
+        const ctx = document.getElementById('priorityChart').getContext('2d');
+        new Chart(ctx, { type: 'radar', data: { labels: priorityData.labels, datasets: [{ label: '{{ profile1.name }}', data: priorityData.user1_priorities, backgroundColor: 'rgba(236, 72, 153, 0.2)', borderColor: 'rgba(236, 72, 153, 1)', borderWidth: 2 }, { label: '{{ profile2.name }}', data: priorityData.user2_priorities, backgroundColor: 'rgba(20, 184, 166, 0.2)', borderColor: 'rgba(20, 184, 166, 1)', borderWidth: 2 }] }, options: { scales: { r: { suggestedMin: 0, suggestedMax: 10 } } } });
+
+        // Fungsi Regenerate (Tidak Berubah)
+        async function regenerate(type) {
+            const button = document.getElementById(`btn-regen-${type === 'story' ? 'story' : 'idea'}`);
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+            button.disabled = true;
+            try {
+                const response = await fetch(`/regenerate/${type}/${analysisId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                if (!response.ok) { throw new Error('Gagal meregenerasi konten.'); }
+                const data = await response.json();
+                let container = document.getElementById(type === 'story' ? 'love-story-container' : 'date-idea-container');
+                if (container) {
+                    container.style.opacity = 0;
+                    setTimeout(() => { container.innerHTML = `"${data.new_content}"`; container.style.opacity = 1; }, 500);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Maaf, terjadi kesalahan: ${error.message}`);
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // --- ✨ FUNGSI BARU: Web Share API ---
+        async function shareResult() {
+            const shareButton = document.getElementById('btn-share');
+            const originalShareText = shareButton.innerHTML;
+            const shareUrl = `{{ url_for('main.share_image', analysis_id=analysis.id, _external=True) }}`;
+            const shareTitle = 'Analisis Kecocokan Cinta';
+            const shareText = `Lihat hasil analisis kecocokan antara {{ profile1.name }} dan {{ profile2.name }}!`;
+
+            // Cek apakah Web Share API didukung
+            if (navigator.share) {
+                shareButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyiapkan...';
+                shareButton.disabled = true;
+
+                try {
+                    // Ambil gambar dari server sebagai blob
+                    const response = await fetch(shareUrl);
+                    const imageBlob = await response.blob();
+                    const imageFile = new File([imageBlob], 'analisis-cinta.png', { type: 'image/png' });
+
+                    // Cek apakah browser bisa membagikan file
+                    if (navigator.canShare && navigator.canShare({ files: [imageFile] })) {
+                        await navigator.share({
+                            title: shareTitle,
+                            text: shareText,
+                            files: [imageFile],
+                        });
+                    } else {
+                        // Fallback jika tidak bisa bagikan file, bagikan teks dan URL saja
+                        await navigator.share({
+                            title: shareTitle,
+                            text: shareText,
+                            url: window.location.href
+                        });
+                    }
+                } catch (error) {
+                    // Error ini biasanya terjadi jika pengguna membatalkan dialog share
+                    console.log('Proses berbagi dibatalkan atau gagal:', error);
+                    // Sebagai fallback jika ada error, buka gambar di tab baru
+                    window.open(shareUrl, '_blank');
+                } finally {
+                    shareButton.innerHTML = originalShareText;
+                    shareButton.disabled = false;
+                }
+            } else {
+                // Fallback untuk browser desktop atau yang tidak mendukung
+                alert("Fitur bagikan ini paling baik digunakan di ponsel. Gambar akan dibuka di tab baru agar Anda dapat menyimpannya.");
+                window.open(shareUrl, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>

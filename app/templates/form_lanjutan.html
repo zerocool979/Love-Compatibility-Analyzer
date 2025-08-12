@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Analisis Cinta - Lanjutan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styling */
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
+        
+        /* Form Step Styling */
+        .form-step { display: none; animation: fadeIn 0.5s; }
+        .form-step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Range Slider Thumb */
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #ec4899; cursor: pointer; border-radius: 50%; }
+        input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: #ec4899; cursor: pointer; border-radius: 50%; }
+
+        /* ✨ BARU: Styling untuk Pilihan Nada Cerita */
+        .tone-option {
+            @apply flex flex-col items-center justify-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer transition-all duration-300 text-gray-500;
+        }
+        .tone-option:hover {
+            @apply border-purple-400 text-purple-600;
+        }
+        .tone-option.active {
+            @apply border-purple-600 bg-purple-50 text-purple-700 shadow-md scale-105;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-8 space-y-8">
+        <div>
+            <h1 class="text-3xl font-bold text-center text-gray-800">Bangun Profil Cinta Kalian</h1>
+            <p class="text-center text-gray-500 mt-2">Semakin detail, semakin akurat analisisnya.</p>
+        </div>
+
+        <!-- Progress Bar: Sekarang memiliki 4 langkah -->
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div id="progressBar" class="bg-gradient-to-r from-pink-500 to-rose-500 h-2.5 rounded-full transition-all duration-500" style="width: 25%;"></div>
+        </div>
+
+        <form action="{{ url_for('main.predict') }}" method="POST">
+            <!-- Step 1: Profil Orang Pertama -->
+            <div id="step1" class="form-step">
+                <!-- Konten Step 1 (Profil #1) tidak berubah -->
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Kolom Kiri: Info Dasar -->
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-semibold text-pink-600 border-b-2 border-pink-200 pb-2">Profil #1</h2>
+                        <div>
+                            <label for="name1" class="block text-sm font-medium text-gray-700">Nama</label>
+                            <input type="text" name="name1" placeholder="cth: Andira" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                        </div>
+                        <div>
+                            <label for="city1" class="block text-sm font-medium text-gray-700">Kota Tempat Tinggal</label>
+                            <input type="text" name="city1" placeholder="cth: Jakarta" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <label for="age1" class="block text-sm font-medium text-gray-700">Usia</label>
+                                <input type="number" name="age1" placeholder="25" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                            </div>
+                            <div class="flex-1">
+                                <label for="gender1" class="block text-sm font-medium text-gray-700">Gender</label>
+                                <select name="gender1" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                                    <option value="Wanita">Wanita</option>
+                                    <option value="Pria">Pria</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Minat & Hobi (Pilih beberapa)</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+                                <!-- Opsi Checkbox Minat -->
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Olahraga" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Olahraga</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Nonton Olahraga" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Nonton Olahraga</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Workout" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Workout</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Kuliner" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Kuliner</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Museum" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Museum</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Seni" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Seni</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Naik Gunung" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Naik Gunung</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Gaming" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Gaming</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Dugem" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Dugem</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Membaca" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Membaca</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Nonton TV" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Nonton TV</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Teater" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Teater</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Film" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Film</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Konser" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Konser</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Musik" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Musik</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Belanja" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Belanja</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests1" value="Yoga" class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 mr-2">Yoga</label></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Kolom Kanan: Prioritas -->
+                    <div class="space-y-4 bg-pink-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800">Apa yang Anda Cari dari Pasangan?</h3>
+                        <p class="text-sm text-gray-500">Bagi 100 poin untuk 6 atribut berikut.</p>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-heart text-pink-400 mr-2"></i>Atraktif</span><span id="val_attr1_1">15</span></label>
+                                <input type="range" name="attr1_1" id="attr1_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-1">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-handshake-angle text-pink-400 mr-2"></i>Tulus</span><span id="val_sinc1_1">20</span></label>
+                                <input type="range" name="sinc1_1" id="sinc1_1" min="0" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-1">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-brain text-pink-400 mr-2"></i>Cerdas</span><span id="val_intel1_1">20</span></label>
+                                <input type="range" name="intel1_1" id="intel1_1" min="0" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-1">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-laugh-beam text-pink-400 mr-2"></i>Menyenangkan</span><span id="val_fun1_1">15</span></label>
+                                <input type="range" name="fun1_1" id="fun1_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-1">
+                            </div>
+                             <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-rocket text-pink-400 mr-2"></i>Ambisius</span><span id="val_amb1_1">15</span></label>
+                                <input type="range" name="amb1_1" id="amb1_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-1">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-people-arrows text-pink-400 mr-2"></i>Minat Sama</span><span id="val_shar1_1">15</span></label>
+                                <input type="range" name="shar1_1" id="shar1_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-1">
+                            </div>
+                        </div>
+                        <div class="text-center font-bold text-lg text-pink-600 pt-2">Total Poin: <span id="totalPoints1">100</span> / 100</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Profil Orang Kedua -->
+            <div id="step2" class="form-step">
+                <!-- Konten Step 2 (Profil #2) tidak berubah -->
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-semibold text-teal-600 border-b-2 border-teal-200 pb-2">Profil #2</h2>
+                        <div>
+                            <label for="name2" class="block text-sm font-medium text-gray-700">Nama</label>
+                            <input type="text" name="name2" placeholder="cth: Bima" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                        </div>
+                        <div>
+                            <label for="city2" class="block text-sm font-medium text-gray-700">Kota Tempat Tinggal</label>
+                            <input type="text" name="city2" placeholder="cth: Bandung" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <label for="age2" class="block text-sm font-medium text-gray-700">Usia</label>
+                                <input type="number" name="age2" placeholder="28" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                            <div class="flex-1">
+                                <label for="gender2" class="block text-sm font-medium text-gray-700">Gender</label>
+                                <select name="gender2" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                                    <option value="Pria">Pria</option>
+                                    <option value="Wanita">Wanita</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                             <label class="block text-sm font-medium text-gray-700 mb-2">Minat & Hobi (Pilih beberapa)</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+                                <!-- Opsi Checkbox Minat -->
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Olahraga" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Olahraga</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Nonton Olahraga" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Nonton Olahraga</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Workout" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Workout</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Kuliner" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Kuliner</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Museum" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Museum</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Seni" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Seni</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Naik Gunung" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Naik Gunung</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Gaming" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Gaming</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Dugem" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Dugem</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Membaca" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Membaca</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Nonton TV" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Nonton TV</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Teater" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Teater</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Film" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Film</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Konser" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Konser</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Musik" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Musik</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Belanja" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Belanja</label></div>
+                                <div><label class="flex items-center"><input type="checkbox" name="interests2" value="Yoga" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 mr-2">Yoga</label></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4 bg-teal-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800">Apa yang Anda Cari dari Pasangan?</h3>
+                        <p class="text-sm text-gray-500">Bagi 100 poin untuk 6 atribut berikut.</p>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-heart text-teal-400 mr-2"></i>Atraktif</span><span id="val_attr2_1">15</span></label>
+                                <input type="range" name="attr2_1" id="attr2_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-2">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-handshake-angle text-teal-400 mr-2"></i>Tulus</span><span id="val_sinc2_1">20</span></label>
+                                <input type="range" name="sinc2_1" id="sinc2_1" min="0" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-2">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-brain text-teal-400 mr-2"></i>Cerdas</span><span id="val_intel2_1">20</span></label>
+                                <input type="range" name="intel2_1" id="intel2_1" min="0" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-2">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-laugh-beam text-teal-400 mr-2"></i>Menyenangkan</span><span id="val_fun2_1">15</span></label>
+                                <input type="range" name="fun2_1" id="fun2_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-2">
+                            </div>
+                             <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-rocket text-teal-400 mr-2"></i>Ambisius</span><span id="val_amb2_1">15</span></label>
+                                <input type="range" name="amb2_1" id="amb2_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-2">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm"><span><i class="fas fa-people-arrows text-teal-400 mr-2"></i>Minat Sama</span><span id="val_shar2_1">15</span></label>
+                                <input type="range" name="shar2_1" id="shar2_1" min="0" max="100" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-2">
+                            </div>
+                        </div>
+                        <div class="text-center font-bold text-lg text-teal-600 pt-2">Total Poin: <span id="totalPoints2">100</span> / 100</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✨ BARU: Step 3 - Kustomisasi Kreatif -->
+            <div id="step3" class="form-step">
+                <div class="text-center">
+                    <i class="fas fa-palette text-6xl text-purple-500 mb-4"></i>
+                    <h2 class="text-2xl font-bold mb-2 text-gray-800">Pilih Sentuhan Kreatif Anda</h2>
+                    <p class="text-gray-600 mb-8">Pilih "nada" atau "gaya" untuk kisah pertemuan yang akan dibuat oleh AI.</p>
+                    
+                    <!-- Input tersembunyi untuk menyimpan nilai nada cerita -->
+                    <input type="hidden" name="story_tone" id="story_tone" value="Romantis Klasik">
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                        <!-- Pilihan Nada Cerita -->
+                        <div class="tone-option active" data-tone="Romantis Klasik">
+                            <i class="fas fa-book-open text-3xl mb-2"></i>
+                            <span class="text-sm font-semibold">Romantis Klasik</span>
+                        </div>
+                        <div class="tone-option" data-tone="Komedi Ringan">
+                            <i class="fas fa-laugh-beam text-3xl mb-2"></i>
+                            <span class="text-sm font-semibold">Komedi Ringan</span>
+                        </div>
+                        <div class="tone-option" data-tone="Puitis & Mendalam">
+                            <i class="fas fa-feather-alt text-3xl mb-2"></i>
+                            <span class="text-sm font-semibold">Puitis & Mendalam</span>
+                        </div>
+                        <div class="tone-option" data-tone="Petualangan Seru">
+                            <i class="fas fa-map-signs text-3xl mb-2"></i>
+                            <span class="text-sm font-semibold">Petualangan Seru</span>
+                        </div>
+                        <div class="tone-option" data-tone="Misterius">
+                            <i class="fas fa-user-secret text-3xl mb-2"></i>
+                            <span class="text-sm font-semibold">Misterius</span>
+                        </div>
+                        <div class="tone-option" data-tone="Keajaiban Tak Terduga">
+                            <i class="fas fa-star text-3xl mb-2"></i>
+                            <span class="text-sm font-semibold">Keajaiban</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Konfirmasi (Sebelumnya Step 3) -->
+            <div id="step4" class="form-step text-center">
+                 <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                 <h2 class="text-2xl font-bold mb-2 text-gray-800">Semua Data Siap!</h2>
+                 <p class="text-gray-600 mb-8">Satu klik lagi untuk mengungkap potensi kisah cinta Anda melalui perpaduan sains dan keajaiban AI.</p>
+                 <button type="submit" class="w-full md:w-auto bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-3 px-12 rounded-full text-lg transition-transform transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-magic mr-2"></i> Lihat Hasil Analisis
+                </button>
+            </div>
+
+            <!-- Tombol Navigasi -->
+            <div class="mt-8 flex justify-between">
+                <button type="button" id="prevBtn" onclick="nextPrev(-1)" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition">Kembali</button>
+                <button type="button" id="nextBtn" onclick="nextPrev(1)" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-lg transition">Lanjut</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentStep = 0;
+            const steps = document.querySelectorAll(".form-step");
+            const progressBar = document.getElementById("progressBar");
+            const prevBtn = document.getElementById("prevBtn");
+            const nextBtn = document.getElementById("nextBtn");
+
+            function showStep(n) {
+                // Sembunyikan semua step
+                steps.forEach((step, index) => {
+                    step.classList.toggle('active', index === n);
+                });
+
+                // Atur visibilitas tombol navigasi
+                prevBtn.style.display = n === 0 ? "none" : "inline-block";
+                nextBtn.style.display = n === (steps.length - 1) ? "none" : "inline-block";
+                
+                // Update progress bar
+                updateProgressBar(n, steps.length);
+            }
+
+            // Fungsi navigasi utama
+            window.nextPrev = function(n) {
+                // Validasi form sebelum lanjut
+                if (n === 1 && !validateForm(currentStep)) return;
+                
+                // Pindah ke step berikutnya
+                currentStep += n;
+                showStep(currentStep);
+            }
+            
+            // Fungsi validasi (terutama untuk slider poin)
+            function validateForm(step) {
+                if (step === 0) { // Validasi Profil #1
+                    const total = parseInt(document.getElementById('totalPoints1').innerText);
+                    if (total !== 100) {
+                        alert('Total poin untuk Profil #1 harus tepat 100.');
+                        return false;
+                    }
+                }
+                if (step === 1) { // Validasi Profil #2
+                    const total = parseInt(document.getElementById('totalPoints2').innerText);
+                    if (total !== 100) {
+                        alert('Total poin untuk Profil #2 harus tepat 100.');
+                        return false;
+                    }
+                }
+                // Step lain tidak memerlukan validasi khusus
+                return true;
+            }
+
+            function updateProgressBar(n, totalSteps) {
+                const progress = ((n + 1) / totalSteps) * 100;
+                progressBar.style.width = progress + "%";
+            }
+
+            // Fungsi untuk setup slider poin
+            function setupSliders(profileNum) {
+                const sliders = document.querySelectorAll(`.slider-${profileNum}`);
+                const totalDisplay = document.getElementById(`totalPoints${profileNum}`);
+                
+                function updateTotal() {
+                    let currentTotal = 0;
+                    sliders.forEach(slider => {
+                        currentTotal += parseInt(slider.value);
+                    });
+                    totalDisplay.innerText = currentTotal;
+                    // Ubah warna teks total poin jika tidak 100
+                    if (currentTotal === 100) {
+                        totalDisplay.parentElement.classList.remove('text-red-600');
+                        totalDisplay.parentElement.classList.add(profileNum === 1 ? 'text-pink-600' : 'text-teal-600');
+                    } else {
+                        totalDisplay.parentElement.classList.remove(profileNum === 1 ? 'text-pink-600' : 'text-teal-600');
+                        totalDisplay.parentElement.classList.add('text-red-600');
+                    }
+                }
+
+                sliders.forEach(slider => {
+                    const display = document.getElementById(`val_${slider.id}`);
+                    slider.oninput = () => {
+                        display.innerText = slider.value;
+                        updateTotal();
+                    };
+                });
+                updateTotal();
+            }
+
+            // ✨ BARU: Logika untuk Pilihan Nada Cerita
+            const toneOptions = document.querySelectorAll('.tone-option');
+            const storyToneInput = document.getElementById('story_tone');
+
+            toneOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Hapus kelas 'active' dari semua pilihan
+                    toneOptions.forEach(opt => opt.classList.remove('active'));
+                    // Tambahkan kelas 'active' ke pilihan yang diklik
+                    this.classList.add('active');
+                    // Update nilai input tersembunyi
+                    storyToneInput.value = this.getAttribute('data-tone');
+                });
+            });
+
+            // Inisialisasi semuanya saat halaman dimuat
+            showStep(currentStep);
+            setupSliders(1);
+            setupSliders(2);
+        });
+    </script>
+</body>
+</html>
