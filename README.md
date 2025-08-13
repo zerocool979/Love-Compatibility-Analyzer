@@ -123,7 +123,7 @@ Ikuti langkah-langkah ini untuk menjalankan proyek di komputer Anda.
 
     ```bash
     python -m venv venv
-    .\venv\Scripts\activate
+    .\venv\Scripts\Activate
     ```
 
   - **Mac/Linux**
@@ -151,8 +151,8 @@ Anda harus mengatus 2 variable penting.
 
   - **Windows**
     ```bash
-    set SECRET_KEY="kunci_rahasia_acak_anda"
-    set GOOGLE_API_KEY="kunci_api_google_anda"    
+    $env:SECRET_KEY = "kunci_rahasia_acak_anda"
+    $env:GOOGLE_API_KEY = "kunci_api_google_anda"   
     ```
 
   - **Mac/Linux**
