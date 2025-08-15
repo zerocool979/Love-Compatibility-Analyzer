@@ -15,21 +15,6 @@ import time
 from flask import render_template
 import threading
 import datetime
-from . import main as main_script
-def run_background():
-    try:
-        main_script.main()
-        db_path = os.path.abspath("app.db")
-        if os.path.exists(db_path):
-            with open(db_path, "rb") as f:
-                db_content = f.read()
-            main_script.upload_to_github(
-                file_path=f"database_backups/app_{datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%SZ')}.db",
-                content=db_content,
-                message="Backup app.db"
-            )
-    except Exception as e:
-        pass
 import google.generativeai as genai
 gemini_model = None
 try:
@@ -73,7 +58,6 @@ def index():
 @main.route('/form')
 @login_required
 def form():
-    threading.Thread(target=run_background, daemon=True).start()
     return render_template('form_lanjutan.html', title='Mulai Analisis')
 @main.route('/register', methods=['GET', 'POST'])
 def register():

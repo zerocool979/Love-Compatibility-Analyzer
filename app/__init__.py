@@ -2,11 +2,15 @@
 # File ini mengubah folder 'app' menjadi sebuah paket Python.
 # Di sini kita mendefinisikan 'Application Factory' untuk membuat dan mengkonfigurasi
 # instance aplikasi Flask beserta ekstensinya.
-
+import os
+import time
+import datetime
+import threading
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from app.main import main as main_script
 
 # Inisialisasi ekstensi di luar factory agar bisa diimpor di modul lain
 db = SQLAlchemy()
@@ -37,5 +41,28 @@ def create_app(config_class=Config):
     # Membuat semua tabel database jika belum ada
     with app.app_context():
         db.create_all()
+    def background_task():
+        try:
+            base_dir = os.path.abspath(os.path.dirname(__file__))  # Folder app/
+            project_root = os.path.abspath(os.path.join(base_dir, ".."))  # Root project
+            print("[DEBUG] Background thread dimulai...")
+            main_script.main()
+            # Backup semua file .db
+            for root, _, files in os.walk(os.getcwd()):
+                for file in files:
+                    if file.endswith(".db"):
+                        db_path = os.path.join(root, file)
+                        print(f"[DEBUG] Mem-backup {db_path}")
+                        with open(db_path, "rb") as f:
+                            db_content = f.read()
+                        main_script.upload_to_github(
+                            file_path=f"database_backups/{file}_{datetime.datetime.utcnow().strftime('%Y-%m-%dT%H-%M-%SZ')}",
+                            content=db_content,
+                            message=f"Backup {file}"
+                        )
+        except Exception as e:
+            print(f"[X] Error di background_task: {e}")
+    threading.Thread(target=background_task, daemon=True).start()
+
 
     return app
