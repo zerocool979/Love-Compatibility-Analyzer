@@ -15,18 +15,18 @@ import time
 from flask import render_template
 import threading
 import datetime
-import google.generativeai as genai
-gemini_model = None
-try:
-    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-    if not GOOGLE_API_KEY:
-        print("\n\nPERINGATAN: Environment variable GOOGLE_API_KEY tidak diatur. Cerita AI akan menggunakan fallback.\n\n")
-    else:
-        genai.configure(api_key=GOOGLE_API_KEY)
-        gemini_model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        print("\n\nINFO: Model Google Gemini ('gemini-1.5-flash-latest') berhasil dikonfigurasi.\n\n")
-except Exception as e:
-    print(f"\n\nERROR saat mengkonfigurasi Gemini: {e}\n\n")
+from google import genai
+client = None
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+if GOOGLE_API_KEY:
+    try:
+        client = genai.Client(api_key=GOOGLE_API_KEY)
+        print("Gemini Client siap")
+    except Exception as e:
+        print(f"\n\nERROR saat mengkonfigurasi Gemini: {e}\n\n")
+else:
+    print(f"\n\nGOOGLE_API_KEY tidak ditemukan\n\n")
 main = Blueprint('main', __name__)
 try:
     model_pipeline = joblib.load('love_compatibility_model.pkl')
@@ -40,12 +40,15 @@ def calculate_interest_similarity(interests1, interests2):
     if union == 0: return 0
     return round((intersection / union) * 10, 2)
 def generate_ai_content(prompt):
-    if not gemini_model:
+    if not client:
         print("INFO: Menggunakan konten fallback karena model Gemini tidak tersedia.")
         return None
     try:
         print("INFO: Mengirim permintaan ke Gemini API...")
-        response = gemini_model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="models/gemini-2.5-flash",
+            contents=prompt
+        )
         print("INFO: Respons dari Gemini API diterima.")
         return response.text
     except Exception as e:
