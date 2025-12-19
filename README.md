@@ -23,11 +23,10 @@
 3.  **Fitur Unggulan**
 4.  **Teknologi yang Digunakan**
 5.  **Cara Menjalankan Secara Lokal**
-6.  **Referensi dan Dataset**
-7.  **Feedback dan Kontribusi**
-8.  **Author**
-
----
+6.  **File Bonus**
+7.  **Referensi dan Dataset**
+8.  **Feedback dan Kontribusi**
+9.  **Author**
 
 ---
 
@@ -39,31 +38,36 @@
 
 ## Struktur Proyek
 
-Berikut adalah arsitektur folder dan file yang membentuk proyek ini:
+```
+Love-Compatibility-Analyzer/
+├── app/
+│   ├── main/
+│   │   ├── routes.py			# Semua logika rute, halaman, dan GeminiCall
+│   │   └── main.py
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── loading.html
+│   │   ├── index_lanjutan.html
+│   │   ├── dashboard.html
+│   │   ├── form_lanjutan.html
+│   │   └── result_lanjutan.html
+│   ├── forms.py			# Formulir login & registrasi
+│   ├── models.py			# Model database (User, Analysis)
+│   └── __init__.py			# Inisialisasi aplikasi (App Factory)
+├── love_compatibility_model.pkl	# Model RandomForestClassifier yang telah dioptimalkan
+├── pelatihan_model_lanjutan.py		# Script untuk data preprocessing dan tuning model
+├── Speed Dating Data.csv		# Dataset asli yang digunakan untuk pelatihan
+├── requirements.txt			# Daftar Dependensi Python
+├── config.py
+├── ListModelGemini.py			# Daftar model Gemini yang bisa digunkan
+├── GeminiCLI.py			# File Bonus
+├── README.md
+└── run.py				# Entry point untuk menjalankan aplikasi
+```
 
-- [Love-Compatibility-Analyzer/](https://github.com/zerocool979/Love-Compatibility-Analyzer)
-  - `./run.py` – Entry point untuk menjalankan aplikasi
-  - `./pelatihan_model_lanjutan.py` – Script untuk data preprocessing dan tuning model
-  - `./pelatihan_model_lanjutan.pkl` – Model RandomForestClassifier yang telah dioptimalkan
-  - `./Speed-Dating-Data.csv` – Dataset asli yang digunakan untuk pelatihan
-  - `./requirements.txt` - Daftar Dependensi Python
-- [app/](./app/)
-  - `./app/__init__.py` – Inisialisasi aplikasi (App Factory)
-  - `./app/models.py` – Model database (User, Analysis)
-  - `./app/forms.py` - Formulir login & registrasi
-    - [app/main/](./app/main/)
-      - `./app/main/routes.py` – Semua logika rute & halaman
-    - [app/templates](./app/templates/)
-      - `./app/templates/base.html`
-      - `./app/templates/dashboard.html`
-      - `./app/templates/form_lanjutan.html`
-      - `./app/templates/loading.html`
-      - `./app/templates/login.html`
-      - `./app/templates/register.html`
-      - `./app/templates/result_lanjutan.html`
-  ---
-
-> _"Beberapa file mungkin tidak tersedia dan akan otomatis tersedia jika user mempraktekannya langsung. Hal ini dikarenakan kami ingin user dapat merasakan bagaimana rasanya menggunakan proyek ini secara langsung"_
+> _"Ganti model sesuai keinginan kamu, atur dan ganti model Gemini API di file **app/main/routes.py**, lihat lebih detail lihat bagian **File Bonus**"_
 
 ---
 
@@ -90,9 +94,11 @@ Proyek ini dibangun dengan serangkaian fitur yang membuatnya fungsional, akurat,
 4. **Halaman Hasil Interaktif** : Halaman hasil bukan akhir. **Regenerasi cerita** atau minta **ide kencan baru** dengan sekali klik.
 
 5. **Bagikan Hasilmu** : Buat dan bagikan gambar ringkasan hasil analisis Anda yang estetik, siap untuk media sosial.
+
 ---
 
 ## Teknologi yang Digunakan
+
 - **Backend** : Flask, Flask-SQLAlchemy, Flask-Login, Flask-WTF
 - **Machine Learning** : Scikit-learn, Pandas, Joblib
 - **Generative AI** : Google Gemini AI (gemini-1.5-flash-latest)
@@ -137,9 +143,11 @@ Ikuti langkah-langkah ini untuk menjalankan proyek di komputer Anda.
 
 Pastikan memiliki file `requirements.txt`. Jika belum, buat dengan `pip freeze > requirements.txt`. Lalu jalankan:
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+  - **Windows/Mac/Linux**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 5.  Atur Environment Variable
 
@@ -147,6 +155,7 @@ Anda harus mengatus 2 variable penting.
 
   - **SECRET_KEY** : Untuk keamanan sesi Flask.
   - **GOOGLE_API_KEY** : Kunci API dari Google AI Studio.
+
 > _"Catatan : Dapatkan kunci API dari (https://aistudio.google.com/app/apikey)"_
 
   - **Windows**
@@ -194,8 +203,87 @@ Langkah ini hanya perlu dilakukan sekali untuk membuat file `app.db`.
 8.  Buka browser web kamu dan akses:
 
     ```
-    [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+    http://127.0.0.1:5000
     ```
+
+---
+
+## File Bonus
+
+**GeminiCLI.py** pada dasarnya untuk membuat pengecekan pada respon model yang akan digunkaan, tapi bisa juga digunakan lebih lanjut dengan tujuan yang positif.
+
+### Step by step:
+
+1. Pastikan sebelumnya anda telah mendapatkan kunci API dari **(https://aistudio.google.com/app/apikey)**
+
+2. Export variable Gemini API
+
+  - **Windows**
+    ```bash
+    $env:GOOGLE_API_KEY = "kunci_api_google_anda"   
+    ```
+  - **Mac/Linux**
+    ```bash
+    export GOOGLE_API_KEY="kunci_api_google_anda"
+    ```
+
+3. Cek Model yang tersedia untuk Gemini API
+
+    ```bash
+    python3 ListModelGemini.py
+    ```
+
+4. Atur Model dan promt sesuai keinginanmu dan lihat lah hasilnya setelah kamu menjalankannya
+
+    ```bash
+    python3 GeminiCLI.py
+    ```
+
+### Contoh Praktik:
+
+```
+(0-0) fufufafa@whoiam:~/Love-Compatibility-Analyzer$ export GOOGLE_API_KEY="kunci_api_google_anda"
+(0-0) fufufafa@whoiam:~/Love-Compatibility-Analyzer$ python ListModelGemini.py
+models/embedding-gecko-001
+models/gemini-2.5-flash
+models/gemini-2.5-pro
+models/gemini-2.0-flash-exp
+models/gemini-2.0-flash
+models/gemini-2.0-flash-001
+models/gemini-2.0-flash-exp-image-generation
+models/gemini-2.0-flash-lite-001
+models/gemini-2.0-flash-lite
+models/gemini-2.0-flash-lite-preview-02-05
+models/gemini-2.0-flash-lite-preview
+models/gemini-exp-1206
+models/gemini-2.5-flash-preview-tts
+...
+...
+...
+(0-0) fufufafa@whoiam:~/Love-Compatibility-Analyzer$ cat GeminiCLI.py
+from google import genai
+import os
+
+client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+
+response = client.models.generate_content(
+    model="models/gemini-2.5-flash",
+    contents="Jawab dengan singkat: tips untuk public speaking dengan profesional dan friendly"
+)
+
+print(response.text)
+(0-0) fufufafa@whoiam:~/Love-Compatibility-Analyzer$ python GeminiCLI.py
+Berikut tipsnya:
+
+1.  **Kuasai Materi:** Pahami betul topikmu, strukturkan dengan jelas. (Profesional)
+2.  **Artikulasi Jelas & Intonasi Bervariasi:** Bicara terang, tidak monoton. (Profesional & Friendly)
+3.  **Kontak Mata Merata & Senyum Tulus:** Jalin koneksi, terlihat ramah dan percaya diri. (Profesional & Friendly)
+4.  **Gestur Alami:** Gunakan tangan untuk mendukung poin, jangan kaku. (Profesional & Friendly)
+5.  **Bahasa Mudah Dicerna:** Hindari jargon, selipkan cerita/contoh relevan. (Friendly)
+6.  **Libatkan Audiens:** Ajukan pertanyaan retoris, beri jeda. (Friendly)
+7.  **Antusias & Autentik:** Tunjukkan *passion*, jadilah diri sendiri. (Profesional & Friendly)
+(0-0) fufufafa@whoiam:~/Love-Compatibility-Analyzer$
+```
 
 ---
 
