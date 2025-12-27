@@ -17,6 +17,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    role = db.Column(db.String(20), default='user')
     # Relasi ke tabel Analysis: satu pengguna bisa memiliki banyak analisis
     analyses = db.relationship('Analysis', backref='author', lazy=True)
 

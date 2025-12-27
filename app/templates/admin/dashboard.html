@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h1 class="mb-4">🛡️ Admin Dashboard</h1>
+
+  <!-- ===================== STAT CARDS ===================== -->
+  <div class="row text-center mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Total Users</h5>
+          <h2>{{ users|length }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Total Analyses</h5>
+          <h2>{{ analyses|length }}</h2>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Total Feedback</h5>
+          <h2>{{ feedbacks|length }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CHART ===================== -->
+  <div class="card mb-5 shadow-sm">
+    <div class="card-body">
+      <h4 class="mb-3">📊 Feedback Accuracy</h4>
+      <canvas id="feedbackChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ===================== USERS TABLE ===================== -->
+  <h3 class="mt-4">👤 Users</h3>
+  <table class="table table-bordered table-hover mt-2">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+          {% if user.role != 'admin' %}
+          <form method="POST" action="{{ url_for('main.delete_user', user_id=user.id) }}" onsubmit="return confirm('Hapus user ini?');">
+            <button class="btn btn-sm btn-danger">Hapus</button>
+          </form>
+          {% else %}
+          <span class="text-muted">Admin</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- ===================== ANALYSES TABLE ===================== -->
+  <h3 class="mt-5">📈 Analyses</h3>
+  <table class="table table-bordered table-hover mt-2">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Pasangan</th>
+        <th>Score</th>
+        <th>Waktu</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in analyses %}
+      <tr>
+        <td>{{ a.id }}</td>
+        <td>{{ a.author.username }}</td>
+        <td>{{ a.profile1_name }} & {{ a.profile2_name }}</td>
+        <td>{{ a.score }}%</td>
+        <td>{{ a.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('main.delete_analysis', analysis_id=a.id) }}" onsubmit="return confirm('Hapus analisis ini?');">
+            <button class="btn btn-sm btn-danger">Hapus</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- ===================== FEEDBACK TABLE ===================== -->
+  <h3 class="mt-5">💬 Feedback</h3>
+  <table class="table table-bordered table-hover mt-2">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Analysis</th>
+        <th>Akurasi</th>
+        <th>Waktu</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in feedbacks %}
+      <tr>
+        <td>{{ f.id }}</td>
+        <td>{{ f.user_id }}</td>
+        <td>{{ f.analysis_id }}</td>
+        <td>
+          {% if f.is_accurate %}
+            👍 Akurat
+          {% else %}
+            👎 Tidak Akurat
+          {% endif %}
+        </td>
+        <td>{{ f.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('main.delete_feedback', feedback_id=f.id) }}" onsubmit="return confirm('Hapus feedback ini?');">
+            <button class="btn btn-sm btn-danger">Hapus</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+
+<!-- ===================== CHART SCRIPT ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const accurateCount = {{ feedbacks | selectattr("is_accurate") | list | length }};
+const inaccurateCount = {{ feedbacks | rejectattr("is_accurate") | list | length }};
+
+const ctx = document.getElementById('feedbackChart').getContext('2d');
+new Chart(ctx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Akurat', 'Tidak Akurat'],
+    datasets: [{
+      data: [accurateCount, inaccurateCount],
+      backgroundColor: ['#16a34a', '#dc2626']
+    }]
+  }
+});
+</script>
+
+{% endblock %}

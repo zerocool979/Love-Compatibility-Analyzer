@@ -194,6 +194,12 @@ Langkah ini hanya perlu dilakukan sekali untuk membuat file `app.db`.
     >>> exit()
     ```
 
+- Membuat akun admin
+
+    ```bash
+    flask create-admin
+    ```
+
 7.  Jalankan Aplikasi
 
     ```bash

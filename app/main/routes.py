@@ -1,5 +1,7 @@
 from flask import render_template, request, jsonify, flash, redirect, url_for, Blueprint, make_response
 from flask_login import login_user, current_user, logout_user, login_required
+from functools import wraps
+from flask import abort
 from app import db
 from app.models import User, Analysis, Feedback
 from app.forms import RegistrationForm, LoginForm
@@ -54,6 +56,13 @@ def generate_ai_content(prompt):
     except Exception as e:
         print(f"ERROR saat memanggil Gemini API: {e}")
         return None
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
 @main.route('/')
 @main.route('/index')
 def index():
@@ -61,6 +70,8 @@ def index():
 @main.route('/form')
 @login_required
 def form():
+    if current_user.role == 'admin':
+        abort(403)
     return render_template('form_lanjutan.html', title='Mulai Analisis')
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -78,7 +89,10 @@ def register():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('main.admin_dashboard'))
         return redirect(url_for('main.dashboard'))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -86,14 +100,71 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             flash('Login berhasil!', 'success')
+            if user.role == 'admin':
+                return redirect(url_for('main.admin_dashboard'))
+            next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
         else:
             flash('Login Gagal. Mohon periksa kembali email dan password Anda.', 'danger')
     return render_template('login.html', title='Login', form=form)
+@main.route('/admin/user/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if user.role == 'admin':
+        abort(403)
+
+    Analysis.query.filter_by(user_id=user.id).delete()
+    Feedback.query.filter_by(user_id=user.id).delete()
+
+    db.session.delete(user)
+    db.session.commit()
+
+    flash('User berhasil dihapus', 'success')
+    return redirect(url_for('main.admin_dashboard'))
+@main.route('/admin/analysis/<int:analysis_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_analysis(analysis_id):
+    analysis = Analysis.query.get_or_404(analysis_id)
+
+    Feedback.query.filter_by(analysis_id=analysis.id).delete()
+    db.session.delete(analysis)
+    db.session.commit()
+
+    flash('Analisis berhasil dihapus', 'success')
+    return redirect(url_for('main.admin_dashboard'))
+@main.route('/admin/feedback/<int:feedback_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_feedback(feedback_id):
+    feedback = Feedback.query.get_or_404(feedback_id)
+
+    db.session.delete(feedback)
+    db.session.commit()
+
+    flash('Feedback berhasil dihapus', 'success')
+    return redirect(url_for('main.admin_dashboard'))
 @main.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
+@main.route('/admin/dashboard')
+@login_required
+@admin_required
+def admin_dashboard():
+    users = User.query.all()
+    analyses = Analysis.query.order_by(Analysis.timestamp.desc()).all()
+    feedbacks = Feedback.query.order_by(Feedback.timestamp.desc()).all()
+
+    return render_template(
+        'admin/dashboard.html',
+        users=users,
+        analyses=analyses,
+        feedbacks=feedbacks
+    )
 @main.route('/dashboard')
 @login_required
 def dashboard():

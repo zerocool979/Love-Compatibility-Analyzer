@@ -22,6 +22,26 @@ login_manager.login_message = 'Silakan login untuk mengakses halaman ini.'
 login_manager.login_message_category = 'info'
 
 
+def register_commands(app):
+    @app.cli.command("create-admin")
+    def create_admin():
+        from app.models import User
+        from getpass import getpass
+        if User.query.filter_by(role="admin").first():
+            print("Admin sudah ada.")
+            return
+
+        username = input("Username admin: ")
+        email = input("Email admin: ")
+        password = getpass("Password admin: ")
+
+        admin = User(username=username, email=email, role="admin")
+        admin.set_password(password)
+
+        db.session.add(admin)
+        db.session.commit()
+        print("Admin berhasil dibuat.")
+
 def create_app(config_class=Config):
     """
     Application Factory: Fungsi untuk membuat instance aplikasi Flask.
@@ -37,10 +57,13 @@ def create_app(config_class=Config):
     # Blueprint digunakan untuk mengorganisir rute-rute dalam aplikasi
     from app.main.routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
-    
+
     # Membuat semua tabel database jika belum ada
     with app.app_context():
         db.create_all()
+
+    register_commands(app)
+
     def background_task():
         try:
             base_dir = os.path.abspath(os.path.dirname(__file__))  # Folder app/
